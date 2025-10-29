@@ -7,7 +7,6 @@ on:
 
 jobs:
   build-and-push:
-    name: Build and Push Node Backend Docker Image
     runs-on: ubuntu-latest
 
     steps:
@@ -23,10 +22,17 @@ jobs:
           username: "aniuser"
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
+      - name: Set Dynamic Tag
+        id: tag
+        run: |
+          TAG=v${{ github.run_number }}
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "🔥 Using tag: $TAG"
+
       - name: Build Docker Image
         run: |
           cd docker-nodejs-sample
-          docker build -t aniuser/node-backend:latest .
+          docker build -t aniuser/node-backend:${{ env.TAG }} .
 
       - name: Push Docker Image
-        run: docker push aniuser/node-backend:latest
+        run: docker push aniuser/node-backend:${{ env.TAG }}
