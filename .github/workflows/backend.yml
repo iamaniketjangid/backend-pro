@@ -24,7 +24,6 @@ jobs:
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
       - name: Build Docker Image
-        working-directory: ./node-backend
         run: docker build -t aniuser/node-backend:latest .
 
       - name: Push Docker Image
