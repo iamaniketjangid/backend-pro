@@ -23,12 +23,18 @@ jobs:
           username: "aniuser"
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
-      - name: Set version tag
-        id: vars
+      - name: Get latest version tag
+        id: get_tag
         run: |
-          TAG=v$(date +'%Y%m%d%H%M')
-          echo "TAG=$TAG" >> $GITHUB_ENV
-          echo "🔥 Using Docker tag: $TAG"
+          latest_tag=$(curl -s https://hub.docker.com/v2/repositories/aniuser/node-backend/tags/?page_size=1 | jq -r '.results[0].name')
+          if [[ "$latest_tag" =~ ^v[0-9]+$ ]]; then
+            version=${latest_tag#v}
+            new_tag="v$((version + 1))"
+          else
+            new_tag="v1"
+          fi
+          echo "TAG=$new_tag" >> $GITHUB_ENV
+          echo "🔥 New Docker Tag: $new_tag"
 
       - name: Build and Push Docker Images
         run: |
@@ -42,8 +48,3 @@ jobs:
           echo "✅ Successfully pushed:"
           echo "➡️ aniuser/node-backend:${{ env.TAG }}"
           echo "➡️ aniuser/node-backend:latest"
-
-      - name: Verify Images on Local Docker
-        run: |
-          echo "🧾 Listing local images..."
-          docker images aniuser/node-backend
