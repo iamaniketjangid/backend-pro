@@ -23,28 +23,31 @@ jobs:
           username: "aniuser"
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
-      - name: Get latest version tag
+      - name: Get latest version tag 🔢
         id: get_tag
         run: |
-          latest_tag=$(curl -s https://hub.docker.com/v2/repositories/aniuser/node-backend/tags/?page_size=1 | jq -r '.results[0].name')
-          if [[ "$latest_tag" =~ ^v[0-9]+$ ]]; then
+          echo "📡 Checking Docker Hub for latest tag..."
+          curl -s https://hub.docker.com/v2/repositories/aniuser/node-backend/tags/?page_size=5 > tags.json
+          cat tags.json
+          latest_tag=$(cat tags.json | jq -r '.results | map(.name) | map(select(test("^v[0-9]+$"))) | sort | last')
+          
+          if [[ -z "$latest_tag" || "$latest_tag" == "null" ]]; then
+            new_tag="v1"
+          else
             version=${latest_tag#v}
             new_tag="v$((version + 1))"
-          else
-            new_tag="v1"
           fi
+          
           echo "TAG=$new_tag" >> $GITHUB_ENV
           echo "🔥 New Docker Tag: $new_tag"
 
-      - name: Build and Push Docker Images
+      - name: Build and Push Docker Images 🐳
         run: |
           cd docker-nodejs-sample
           docker build -t aniuser/node-backend:${{ env.TAG }} .
-          docker tag aniuser/node-backend:${{ env.TAG }} aniuser/node-backend:latest
-          
+          docker build -t aniuser/node-backend:latest .
+
           docker push aniuser/node-backend:${{ env.TAG }}
           docker push aniuser/node-backend:latest
           
-          echo "✅ Successfully pushed:"
-          echo "➡️ aniuser/node-backend:${{ env.TAG }}"
-          echo "➡️ aniuser/node-backend:latest"
+          echo "✅ Successfully pushed aniuser/node-backend:${{ env.TAG }} and latest"
