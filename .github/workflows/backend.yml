@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    name: Build & Push Node Backend Docker Images
+    name: Build & Push Node Backend Docker Image
     runs-on: ubuntu-latest
 
     steps:
@@ -23,31 +23,23 @@ jobs:
           username: "aniuser"
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
-      - name: Get latest version tag 🔢
-        id: get_tag
+      - name: Get Latest Tag and Set Next Version
+        id: tag
         run: |
-          echo "📡 Checking Docker Hub for latest tag..."
-          curl -s https://hub.docker.com/v2/repositories/aniuser/node-backend/tags/?page_size=5 > tags.json
-          cat tags.json
-          latest_tag=$(cat tags.json | jq -r '.results | map(.name) | map(select(test("^v[0-9]+$"))) | sort | last')
-          
-          if [[ -z "$latest_tag" || "$latest_tag" == "null" ]]; then
-            new_tag="v1"
+          LAST_TAG=$(curl -s https://hub.docker.com/v2/repositories/aniuser/node-backend/tags/?page_size=1 | jq -r '.results[0].name' | sed 's/v//')
+          if [[ "$LAST_TAG" =~ ^[0-9]+$ ]]; then
+            NEXT_TAG=$((LAST_TAG + 1))
           else
-            version=${latest_tag#v}
-            new_tag="v$((version + 1))"
+            NEXT_TAG=1
           fi
-          
-          echo "TAG=$new_tag" >> $GITHUB_ENV
-          echo "🔥 New Docker Tag: $new_tag"
+          echo "TAG=v$NEXT_TAG" >> $GITHUB_ENV
+          echo "🚀 Next tag: v$NEXT_TAG"
 
-      - name: Build and Push Docker Images 🐳
+      - name: Build and Push Docker Image
         run: |
-          cd docker-nodejs-sample
+          cd docker-nodejs-smaple
           docker build -t aniuser/node-backend:${{ env.TAG }} .
-          docker build -t aniuser/node-backend:latest .
-
           docker push aniuser/node-backend:${{ env.TAG }}
+          docker tag aniuser/node-backend:${{ env.TAG }} aniuser/node-backend:latest
           docker push aniuser/node-backend:latest
-          
-          echo "✅ Successfully pushed aniuser/node-backend:${{ env.TAG }} and latest"
+          echo "✅ Successfully pushed version ${{ env.TAG }}"
