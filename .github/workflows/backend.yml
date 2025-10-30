@@ -23,23 +23,38 @@ jobs:
           username: "aniuser"
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
-      - name: Get Latest Tag and Set Next Version
+      - name: Get Latest Tag and Set Next Version 🔢
         id: tag
         run: |
-          LAST_TAG=$(curl -s https://hub.docker.com/v2/repositories/aniuser/node-backend/tags/?page_size=1 | jq -r '.results[0].name' | sed 's/v//')
-          if [[ "$LAST_TAG" =~ ^[0-9]+$ ]]; then
-            NEXT_TAG=$((LAST_TAG + 1))
-          else
-            NEXT_TAG=1
-          fi
-          echo "TAG=v$NEXT_TAG" >> $GITHUB_ENV
-          echo "🚀 Next tag: v$NEXT_TAG"
+          IMAGE="aniuser/node-backend"
+          echo "Fetching latest tag for $IMAGE..."
 
-      - name: Build and Push Docker Image
+          # Get all version tags in correct order
+          LAST_TAG=$(curl -s "https://hub.docker.com/v2/repositories/${IMAGE}/tags/?page_size=100" \
+            | jq -r '.results[].name' \
+            | grep '^v[0-9]\+$' \
+            | sed 's/v//' \
+            | sort -n \
+            | tail -1)
+
+          # If no tags exist, start from v1
+          if [ -z "$LAST_TAG" ]; then
+            NEXT_TAG=1
+          else
+            NEXT_TAG=$((LAST_TAG + 1))
+          fi
+
+          echo "TAG=v$NEXT_TAG" >> $GITHUB_ENV
+          echo "🚀 Next version tag will be: v$NEXT_TAG"
+
+      - name: Build and Push Docker Image 🐳
         run: |
           cd docker-nodejs-sample
           docker build -t aniuser/node-backend:${{ env.TAG }} .
           docker push aniuser/node-backend:${{ env.TAG }}
+
+          # Also tag and push 'latest'
           docker tag aniuser/node-backend:${{ env.TAG }} aniuser/node-backend:latest
           docker push aniuser/node-backend:latest
+
           echo "✅ Successfully pushed version ${{ env.TAG }}"
