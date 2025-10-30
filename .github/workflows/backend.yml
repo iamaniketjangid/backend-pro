@@ -24,15 +24,26 @@ jobs:
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
       - name: Set version tag
-        run: echo "TAG=v$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+        id: vars
+        run: |
+          TAG=v$(date +'%Y%m%d%H%M')
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "🔥 Using Docker tag: $TAG"
 
       - name: Build and Push Docker Images
         run: |
           cd docker-nodejs-sample
           docker build -t aniuser/node-backend:${{ env.TAG }} .
-          docker build -t aniuser/node-backend:latest .
-
+          docker tag aniuser/node-backend:${{ env.TAG }} aniuser/node-backend:latest
+          
           docker push aniuser/node-backend:${{ env.TAG }}
           docker push aniuser/node-backend:latest
+          
+          echo "✅ Successfully pushed:"
+          echo "➡️ aniuser/node-backend:${{ env.TAG }}"
+          echo "➡️ aniuser/node-backend:latest"
 
-          echo "✅ Successfully pushed aniuser/node-backend:${{ env.TAG }} and latest"
+      - name: Verify Images on Local Docker
+        run: |
+          echo "🧾 Listing local images..."
+          docker images aniuser/node-backend
