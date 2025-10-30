@@ -24,15 +24,14 @@ jobs:
           password: "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI"
 
       - name: Set version tag
-        id: vars
         run: echo "TAG=v$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
       - name: Build and Push Docker Images
         run: |
           docker build -t aniuser/node-backend:${{ env.TAG }} .
           docker build -t aniuser/node-backend:latest .
-          
+
           docker push aniuser/node-backend:${{ env.TAG }}
           docker push aniuser/node-backend:latest
-          
+
           echo "✅ Successfully pushed aniuser/node-backend:${{ env.TAG }} and latest"
