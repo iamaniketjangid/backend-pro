@@ -37,7 +37,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          cd docker-nodejs-smaple
+          cd docker-nodejs-sample
           docker build -t aniuser/node-backend:${{ env.TAG }} .
           docker push aniuser/node-backend:${{ env.TAG }}
           docker tag aniuser/node-backend:${{ env.TAG }} aniuser/node-backend:latest
