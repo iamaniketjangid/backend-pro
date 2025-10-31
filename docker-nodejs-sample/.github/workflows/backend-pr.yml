@@ -9,6 +9,9 @@ jobs:
   build-and-deploy:
     name: Build, Push & Deploy Node Backend
     runs-on: ubuntu-latest
+    environment:
+      name: production   # 👈 connects to the environment you created
+      url: http://16.170.214.218  # optional (for dashboard link)
 
     steps:
       - name: Checkout Code
