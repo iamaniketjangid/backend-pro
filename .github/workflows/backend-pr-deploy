@@ -10,8 +10,7 @@ jobs:
     name: Build, Push & Deploy Backend
     runs-on: ubuntu-latest
     environment:
-      name: production # 👈 connects to the environment you created
-      url: http://16.170.214.218 # optional (for dashboard link)
+      name: production2
 
     steps:
     - name: Checkout Code
@@ -42,7 +41,7 @@ jobs:
           sudo apt update -y
           sudo apt install docker.io -y
           echo "🔑 Logging into DockerHub..."
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "dckr_pat_-ktgFv9zbZemgourVtBJzSlPtoI" | sudo docker login -u "aniuser" --password-stdin
           sudo docker stop node-backend || true
           sudo docker rm node-backend || true
           sudo docker pull aniuser/node-backend:latest
